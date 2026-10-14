@@ -1,4 +1,4 @@
-# hotel-reservation
+# hotel-reservation-sockets
 
 A hotel reservation system over plain TCP sockets, written in Python for a computer-networks course. One multi-threaded server and a menu-driven command-line client talk through newline-delimited JSON.
 
