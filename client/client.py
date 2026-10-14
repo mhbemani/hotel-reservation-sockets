@@ -204,7 +204,7 @@ def main():
                 leaving_params['id'] = user_id
                 resp = send_request(sock, 'leaving', leaving_params)
 
-        elif is_admin and cmd=='7': resp=send_request(sock,'view_all_users')
+        elif is_admin and cmd=='7': resp=send_request(sock,'view_all_users',{'id':user_id})
         
         elif is_admin and cmd == '8':
             resp = send_request(sock, 'view_rooms')

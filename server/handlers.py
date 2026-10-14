@@ -75,6 +75,10 @@ def handle_view_rooms(client_sock, request):
     rooms = load_json('RoomsInfo.json')['rooms']
     return {'code': '001', 'message': ERRORS.get('001', ''), 'data': rooms}
 
+def is_admin(user_id):
+    return any(u['id'] == user_id and u.get('admin', False) for u in load_json('UsersInfo.json')['users'])
+
+
 def handle_booking(client_sock, request):
     p = request.get('params', {})
     user_id = p.get('id')
@@ -85,11 +89,13 @@ def handle_booking(client_sock, request):
     try:
         ci = datetime.datetime.strptime(checkin, '%d-%m-%Y')
         co = datetime.datetime.strptime(checkout, '%d-%m-%Y')
-        current_date_str = load_json('Config.json').get('current_date')
+        current_date_str = load_json('config.json').get('current_date')
         current_date = datetime.datetime.strptime(current_date_str, '%d-%m-%Y')
         if co <= ci or ci < current_date:
             return {'code': '401', 'message': ERRORS.get('401', '')}
     except:
+        return {'code': '401', 'message': ERRORS.get('401', '')}
+    if not isinstance(beds, int) or isinstance(beds, bool) or beds <= 0:
         return {'code': '401', 'message': ERRORS.get('401', '')}
     data = load_json('RoomsInfo.json')
     for room in data['rooms']:
@@ -152,9 +158,9 @@ def handle_cancel(client_sock, request):
     room_number = str(p.get('room'))
     beds_to_cancel = p.get('beds')
     
-    # خواندن تاریخ فعلی از Config.json
+    # خواندن تاریخ فعلی از config.json
     try:
-        current_date_str = load_json('Config.json').get('current_date')
+        current_date_str = load_json('config.json').get('current_date')
         current_date = datetime.datetime.strptime(current_date_str, '%d-%m-%Y')
     except:
         return {'code': '401', 'message': ERRORS.get('401', '')}
@@ -253,7 +259,7 @@ def handle_leaving(client_sock, request):
     
     # خواندن تاریخ فعلی
     try:
-        current_date_str = load_json('Config.json').get('current_date')
+        current_date_str = load_json('config.json').get('current_date')
         current_date = datetime.datetime.strptime(current_date_str, '%d-%m-%Y')
     except:
         return {'code': '401', 'message': ERRORS.get('401', '')}
@@ -289,7 +295,7 @@ def handle_get_active_reservations(client_sock, request):
     user_id = p.get('id')
     
     try:
-        current_date_str = load_json('Config.json').get('current_date')
+        current_date_str = load_json('config.json').get('current_date')
         current_date = datetime.datetime.strptime(current_date_str, '%d-%m-%Y')
     except:
         return {'code': '401', 'message': ERRORS.get('401', '')}
@@ -325,6 +331,8 @@ def handle_admin_rooms(client_sock, request):
     valid_cmds = {'add', 'delete', 'modify_price', 'modify_capacity'}
     if cmd not in valid_cmds:
         return {'code': '401', 'message': ERRORS.get('401', '')}
+    if not is_admin(user_id):
+        return {'code': '403', 'message': ERRORS.get('403', '')}
     
     rooms_data = load_json('RoomsInfo.json')
     
@@ -405,12 +413,10 @@ def handle_admin_rooms(client_sock, request):
         return {'code': '105', 'message': ERRORS.get('105', '')}
 
 def handle_view_all_users(client_sock, request):
+    if not is_admin(request.get('params', {}).get('id')):
+        return {'code': '403', 'message': ERRORS.get('403', '')}
     users = load_json('UsersInfo.json')['users']
-    users_info = [
-        {key: value for key, value in u.items() if key != 'password'} if u.get('admin', False)
-        else {key: value for key, value in u.items()}
-        for u in users
-    ]
+    users_info = [{key: value for key, value in u.items() if key != 'password'} for u in users]
     return {'code': '001', 'message': ERRORS.get('001', ''), 'data': users_info}
 
 def handle_logout(client_sock, request):
