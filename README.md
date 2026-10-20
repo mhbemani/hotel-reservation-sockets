@@ -1,5 +1,7 @@
 # hotel-reservation-sockets
 
+[![CI](https://github.com/mhbemani/hotel-reservation-sockets/actions/workflows/ci.yml/badge.svg)](https://github.com/mhbemani/hotel-reservation-sockets/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A hotel reservation system over plain TCP sockets, written in Python for a computer-networks course. One multi-threaded server and a menu-driven command-line client talk through newline-delimited JSON.
 
 ## What it does
